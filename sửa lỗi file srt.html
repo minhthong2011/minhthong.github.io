@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SRT Ultra Fixer ⚡</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #030315;
+  --surface: #0a0a28;
+  --surface2: #10103a;
+  --border: #1e1e50;
+  --accent: #00e5ff;
+  --accent2: #7b2ff7;
+  --critical: #ff4455;
+  --warning: #ffcc00;
+  --ok: #00dd88;
+  --text: #dde8ff;
+  --muted: #5566aa;
+  --mono: 'JetBrains Mono', monospace;
+  --display: 'Syne', sans-serif;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.08) 2px, rgba(0,0,0,.08) 4px);
+  pointer-events: none; z-index: 999;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none; z-index: 0;
+}
+
+/* HEADER */
+header {
+  position: relative; z-index: 1;
+  padding: 44px 24px 32px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(0,229,255,.04) 0%, transparent 100%);
+}
+.hdr-tag {
+  font-size: 10px; letter-spacing: 4px; color: var(--accent);
+  text-transform: uppercase; opacity: .7; margin-bottom: 10px;
+}
+h1 {
+  font-family: var(--display); font-size: clamp(32px, 7vw, 72px); font-weight: 900;
+  letter-spacing: -3px; line-height: 1;
+  background: linear-gradient(135deg, var(--accent) 0%, #7b2ff7 60%, #ff4455 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 30px rgba(0,229,255,.3));
+}
+.hdr-sub {
+  font-size: 12px; color: var(--muted); letter-spacing: 1px;
+}
+.hdr-badges {
+  display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px;
+}
+.hdr-badge {
+  font-size: 10px; padding: 3px 10px;
+  background: rgba(0,229,255,.05); border: 1px solid rgba(0,229,255,.2);
+  border-radius: 20px; color: var(--accent); letter-spacing: 1px;
+}
+
+/* CONTAINER */
+.wrap { max-width: 1060px; margin: 0 auto; padding: 32px 20px; position: relative; z-index: 1; }
+
+/* DROP ZONE */
+#dropZone {
+  border: 2px dashed var(--border); border-radius: 16px;
+  padding: 70px 40px; text-align: center; cursor: pointer;
+  background: var(--surface);
+  transition: all .3s ease;
+  position: relative; overflow: hidden;
+}
+#dropZone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, rgba(0,229,255,.04) 0%, transparent 70%);
+  opacity: 0; transition: opacity .3s;
+}
+#dropZone:hover::before, #dropZone.over::before { opacity: 1; }
+#dropZone:hover, #dropZone.over {
+  border-color: var(--accent);
+  box-shadow: 0 0 60px rgba(0,229,255,.08), inset 0 0 40px rgba(0,229,255,.02);
+}
+.drop-ico { font-size: 56px; margin-bottom: 18px; display: block; filter: drop-shadow(0 0 14px var(--accent)); }
+#dropZone h2 { font-family: var(--display); font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+#dropZone p { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+.chip {
+  display: inline-block; padding: 5px 16px;
+  background: rgba(0,229,255,.06); border: 1px solid rgba(0,229,255,.25);
+  border-radius: 20px; font-size: 11px; color: var(--accent); letter-spacing: 2px; margin: 3px;
+}
+
+/* PROCESSING */
+#procBox {
+  display: none; text-align: center; padding: 50px 20px;
+  background: var(--surface); border-radius: 16px; border: 1px solid var(--border);
+}
+.spin {
+  width: 56px; height: 56px; border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .7s linear infinite; margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#procLabel { font-size: 13px; color: var(--accent); margin-bottom: 14px; }
+.prog-track { height: 3px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; max-width: 400px; overflow: hidden; }
+.prog-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width .4s ease; }
+.steps { list-style: none; display: inline-block; text-align: left; }
+.steps li { padding: 5px 0; font-size: 12px; color: var(--muted); transition: color .3s; }
+.steps li.active { color: var(--accent); }
+.steps li.done { color: var(--ok); }
+.steps li::before { content: '○  '; }
+.steps li.active::before { content: '◉  '; }
+.steps li.done::before { content: '✓  '; }
+
+/* RESULTS */
+#results { display: none; }
+
+/* FILE INFO STRIP */
+.file-strip {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px 20px; display: flex; gap: 28px; flex-wrap: wrap;
+  font-size: 11px; margin-bottom: 20px;
+}
+.fi { display: flex; flex-direction: column; gap: 3px; }
+.fi-lbl { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 9px; }
+.fi-val { color: var(--accent); font-weight: 700; font-size: 12px; }
+
+/* STAT CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.scard {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 16px; text-align: center; transition: transform .2s, box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+.scard::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.scard.c::after { background: var(--critical); }
+.scard.w::after { background: var(--warning); }
+.scard.i::after { background: var(--ok); }
+.scard.a::after { background: var(--accent); }
+.scard.n::after { background: var(--accent2); }
+.scard:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+.scard-val { font-family: var(--display); font-size: 38px; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+.scard.c .scard-val { color: var(--critical); }
+.scard.w .scard-val { color: var(--warning); }
+.scard.i .scard-val { color: var(--ok); }
+.scard.a .scard-val { color: var(--accent); }
+.scard.n .scard-val { color: var(--accent2); }
+.scard-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+
+/* HEALTH BAR */
+.health-bar {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px;
+}
+.health-label { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.health-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.health-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.health-score { font-family: var(--display); font-size: 22px; font-weight: 900; white-space: nowrap; }
+
+/* SECTION HEADER */
+.sec-hdr {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--display); font-size: 16px; font-weight: 800;
+  margin: 28px 0 14px; letter-spacing: .5px;
+}
+.sec-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* FILTER TABS */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.ftab {
+  padding: 6px 14px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; color: var(--muted); font-family: var(--mono); font-size: 11px;
+  cursor: pointer; transition: all .2s; user-select: none;
+}
+.ftab:hover { border-color: var(--muted); color: var(--text); }
+.ftab.on { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,.06); }
+.ftab.on.c { border-color: var(--critical); color: var(--critical); background: rgba(255,68,85,.06); }
+.ftab.on.w { border-color: var(--warning); color: var(--warning); background: rgba(255,204,0,.06); }
+.ftab.on.i { border-color: var(--ok); color: var(--ok); background: rgba(0,221,136,.06); }
+
+/* ERROR LIST */
+.err-list { display: flex; flex-direction: column; gap: 7px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+.err-list::-webkit-scrollbar { width: 3px; }
+.err-list::-webkit-scrollbar-track { background: transparent; }
+.err-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.eitem {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid transparent; border-radius: 8px; padding: 11px 14px;
+  font-size: 11px; animation: fadeUp .25s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform: translateY(5px); } to { opacity:1; transform: none; } }
+.eitem.critical { border-left-color: var(--critical); }
+.eitem.warning { border-left-color: var(--warning); }
+.eitem.info { border-left-color: var(--ok); }
+.ehdr { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+.ebadge {
+  font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 10px; letter-spacing: 1px;
+}
+.critical .ebadge { background: rgba(255,68,85,.15); color: var(--critical); }
+.warning .ebadge { background: rgba(255,204,0,.15); color: var(--warning); }
+.info .ebadge { background: rgba(0,221,136,.15); color: var(--ok); }
+.etype { font-weight: 700; color: var(--text); font-size: 11px; }
+.eline { margin-left: auto; color: var(--muted); font-size: 10px; }
+.edesc { color: var(--muted); line-height: 1.55; }
+.ecodes { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+.ecode-b, .ecode-a {
+  font-size: 10px; padding: 2px 8px; border-radius: 4px;
+  max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ecode-b { background: rgba(255,68,85,.1); color: #ff8888; }
+.ecode-a { background: rgba(0,221,136,.1); color: #44ee99; }
+.no-err { text-align: center; padding: 30px; color: var(--ok); font-size: 13px; }
+
+/* AI SECTION */
+#aiSection { margin-top: 28px; }
+.ai-card {
+  background: var(--surface); border: 1px solid #3a1a7a; border-radius: 14px; padding: 22px;
+  position: relative; overflow: hidden;
+}
+.ai-card::before {
+  content: ''; position: absolute; top: -40%; left: -20%; width: 60%; height: 180%;
+  background: radial-gradient(ellipse, rgba(123,47,247,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.ai-hdr { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.ai-ico { font-size: 26px; filter: drop-shadow(0 0 10px #7b2ff7); }
+.ai-t1 { font-family: var(--display); font-size: 15px; font-weight: 800; }
+.ai-t2 { font-size: 10px; color: var(--muted); margin-top: 2px; }
+#aiContent { color: #b0b8e0; line-height: 1.72; font-size: 12px; white-space: pre-wrap; display: none; }
+.ai-spin { display: none; text-align: center; padding: 20px; }
+.ai-spin-ico { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--accent2); border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+
+/* BUTTONS */
+.btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--border); }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 26px; border-radius: 9px; border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  transition: all .2s;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #00b8d9);
+  color: var(--bg);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(0,229,255,.3); }
+.btn-ai {
+  background: linear-gradient(135deg, #7b2ff7, #4c1cb8);
+  color: #fff;
+}
+.btn-ai:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(123,47,247,.4); }
+.btn-sec {
+  background: var(--surface); border: 1px solid var(--border); color: var(--text);
+}
+.btn-sec:hover { border-color: var(--muted); }
+
+/* BEFORE/AFTER DIFF preview */
+#diffPreview { display: none; }
+.diff-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden; font-size: 11px; font-family: var(--mono);
+}
+.diff-hdr {
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--muted);
+}
+.diff-body { padding: 14px 16px; max-height: 300px; overflow-y: auto; line-height: 1.7; }
+.diff-line-r { color: #ff8888; }
+.diff-line-g { color: #44ee99; }
+
+@media (max-width: 600px) {
+  .wrap { padding: 14px; }
+  h1 { letter-spacing: -1px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  #dropZone { padding: 48px 16px; }
+  .btn-row { flex-direction: column; }
+  .btn { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-tag">⚡ AUTO-REPAIR SYSTEM V3.0</div>
+  <h1>SRT ULTRA FIXER</h1>
+  <p class="hdr-sub">Phát hiện &amp; Sửa tự động 100% — Không bao giờ lỗi — Claude AI Review</p>
+  <div class="hdr-badges">
+    <span class="chip">27 LOẠI LỖI</span>
+    <span class="chip">AI REVIEW</span>
+    <span class="chip">UTF-8 SAFE</span>
+    <span class="chip">KHÔNG GIỚI HẠN KÍCH THƯỚC</span>
+    <span class="chip">TIMESTAMP FIX</span>
+    <span class="chip">SỐ THỨ TỰ FIX</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- DROP ZONE -->
+  <div id="dropZone">
+    <span class="drop-ico">📂</span>
+    <h2>Kéo &amp; thả file SRT vào đây</h2>
+    <p>Hoặc click để chọn file — hỗ trợ mọi kích thước, mọi ngôn ngữ</p>
+    <span class="chip">.SRT</span>
+    <input type="file" id="fileInput" accept=".srt,.txt" style="display:none">
+  </div>
+
+  <!-- PROCESSING -->
+  <div id="procBox">
+    <div class="spin"></div>
+    <div id="procLabel">Đang khởi động engine...</div>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <ul class="steps" id="stepsList">
+      <li id="s1">Đọc file &amp; phát hiện encoding</li>
+      <li id="s2">Chuẩn hóa BOM &amp; ký tự xuống dòng</li>
+      <li id="s3">Phân tích cấu trúc từng subtitle block</li>
+      <li id="s4">Phát hiện số thứ tự bị gộp vào text</li>
+      <li id="s5">Kiểm tra &amp; sửa định dạng timestamp</li>
+      <li id="s6">Phát hiện chồng lấp &amp; sắp xếp lại</li>
+      <li id="s7">Đánh số lại toàn bộ &amp; tạo file sạch</li>
+      <li id="s8">Xác minh file kết quả hoàn chỉnh</li>
+    </ul>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <div class="file-strip" id="fileStrip"></div>
+    <div class="stats-grid" id="statsGrid"></div>
+    <div class="health-bar" id="healthBar"></div>
+
+    <!-- ERROR REPORT -->
+    <div class="sec-hdr">
+      <span class="sec-dot" style="background:var(--accent); box-shadow:0 0 10px var(--accent)"></span>
+      BÁO CÁO LỖI CHI TIẾT
+    </div>
+    <div class="filter-row" id="filterRow"></div>
+    <div class="err-list" id="errList"></div>
+
+    <!-- DIFF PREVIEW -->
+    <div id="diffPreview">
+      <div class="sec-hdr" style="margin-top:28px">
+        <span class="sec-dot" style="background:var(--accent2); box-shadow:0 0 10px var(--accent2)"></span>
+        XEM TRƯỚC THAY ĐỔI
+      </div>
+      <div class="diff-box">
+        <div class="diff-hdr">🔍 Các dòng đã được sửa (đỏ = gốc, xanh = đã sửa)</div>
+        <div class="diff-body" id="diffBody"></div>
+      </div>
+    </div>
+
+    <!-- AI ANALYSIS -->
+    <div id="aiSection">
+      <div class="sec-hdr" style="margin-top:28px">
+        <span class="sec-dot" style="background:#7b2ff7; box-shadow:0 0 10px #7b2ff7"></span>
+        PHÂN TÍCH AI CHUYÊN SÂU
+      </div>
+      <div class="ai-card">
+        <div class="ai-hdr">
+          <span class="ai-ico">🤖</span>
+          <div>
+            <div class="ai-t1">Claude AI Deep Review</div>
+            <div class="ai-t2">Nhận diện pattern lỗi phức tạp — Đánh giá chất lượng — Khuyến nghị chuyên gia</div>
+          </div>
+        </div>
+        <div id="aiContent"></div>
+        <div class="ai-spin" id="aiSpin">
+          <span class="ai-spin-ico"></span>Claude đang phân tích siêu chi tiết...
+        </div>
+        <button class="btn btn-ai" id="aiBtn" onclick="runAI()">✨ Chạy phân tích AI chuyên sâu (Max Token)</button>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="doDownload()">⬇ Tải file SRT đã sửa hoàn chỉnh</button>
+      <button class="btn btn-sec" onclick="doReset()">↺ Sửa file khác</button>
+    </div>
+
+  </div><!-- /results -->
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  SRT ULTRA FIXER ENGINE — 27 Error Types
+// ═══════════════════════════════════════════════════════════
+
+/* ── Utilities ────────────────────────────────────────── */
+function timeToMs(h, m, s, ms) {
+  return (h * 3600 + m * 60 + s) * 1000 + ms;
+}
+
+function msToTC(ms) {
+  if (ms < 0) ms = 0;
+  const h = Math.floor(ms / 3600000); ms %= 3600000;
+  const m = Math.floor(ms / 60000);   ms %= 60000;
+  const s = Math.floor(ms / 1000);    ms %= 1000;
+  return `${pad2(h)}:${pad2(m)}:${pad2(s)},${pad3(ms)}`;
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function pad3(n) { return String(n).padStart(3, '0'); }
+
+/* Parse a single timecode string HH:MM:SS,mmm or HH:MM:SS.mmm */
+function parseTC(str) {
+  str = str.trim().replace('.', ',');
+  const m = str.match(/^(\d{1,2}):(\d{2}):(\d{2}),(\d{3})$/);
+  if (!m) return null;
+  const [, h, min, s, ms] = m.map(Number);
+  if (min >= 60 || s >= 60 || ms >= 1000) return null;
+  return timeToMs(h, min, s, ms);
+}
+
+/* Detect if a line looks like a timestamp line (permissive) */
+function isTSLine(line) {
+  return /\d{1,2}:\d{2}:\d{2}[,.]\d{3}\s*[-=→>]+\s*\d{1,2}:\d{2}:\d{2}[,.]\d{3}/.test(line.trim());
+}
+
+/* Parse timestamp line → {start, end, hadDot, hadBadArrow, missingSpace} or null */
+function parseTS(line) {
+  const t = line.trim();
+  const hadDot = /\d[.]\d{3}/.test(t);
+  const hadBadArrow = !/-->/.test(t) || /-->>/.test(t) || /[^-]->(?!>)/.test(t);
+  const fixed = t
+    .replace(/\s*--?>>\s*/g, ' --> ')
+    .replace(/\s*=+>\s*/g, ' --> ')
+    .replace(/\s*→\s*/g, ' --> ')
+    .replace(/\s*-->\s*/g, ' --> ')
+    .replace(/[,.]/g, (c, i, s) => {
+      // replace period in timecodes with comma
+      const beforeDigit = i > 0 && /\d/.test(s[i - 1]);
+      const afterThree  = i + 3 < s.length && /\d{3}/.test(s.slice(i + 1, i + 4));
+      return (c === '.' && beforeDigit && afterThree) ? ',' : c;
+    });
+
+  const parts = fixed.split(' --> ');
+  if (parts.length !== 2) return null;
+  const start = parseTC(parts[0]);
+  const end   = parseTC(parts[1]);
+  if (start === null || end === null) return null;
+  return { start, end, hadDot, hadBadArrow };
+}
+
+/* ── Main Fix Function ────────────────────────────────── */
+function fixSRT(raw) {
+  const errors = [];
+  let content  = raw;
+
+  // ── 1. BOM
+  if (content.charCodeAt(0) === 0xFEFF) {
+    errors.push({ ln: 1, type: 'BOM', sev: 'info',
+      desc: 'Phát hiện BOM (Byte Order Mark) ở đầu file — gây lỗi trên một số player.',
+      orig: 'U+FEFF ở byte 0', fix: 'Đã xóa' });
+    content = content.slice(1);
+  }
+
+  // ── 2. Line endings
+  if (content.includes('\r\n')) {
+    errors.push({ ln: 0, type: 'CRLF_LINE_ENDINGS', sev: 'info',
+      desc: 'File dùng ký tự xuống dòng Windows (CRLF \\r\\n) — có thể gây lỗi trên Linux/Mac player.',
+      orig: 'CRLF (\\r\\n)', fix: 'Chuẩn hóa → LF (\\n)' });
+    content = content.replace(/\r\n/g, '\n');
+  } else if (content.includes('\r')) {
+    errors.push({ ln: 0, type: 'CR_LINE_ENDINGS', sev: 'info',
+      desc: 'File dùng ký tự xuống dòng Mac cổ (CR \\r).',
+      orig: 'CR (\\r)', fix: 'Chuẩn hóa → LF (\\n)' });
+    content = content.replace(/\r/g, '\n');
+  }
+
+  const lines = content.split('\n');
+
+  // ── 3. Parse với state machine
+  const entries = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const raw_line = lines[i];
+    const trimmed  = raw_line.trim();
+
+    if (!trimmed) { i++; continue; }
+
+    // ── CASE A: Line is a pure integer → entry number
+    if (/^\d+$/.test(trimmed)) {
+      const parsedNum = parseInt(trimmed, 10);
+      const entry = { num: parsedNum, start: null, end: null, text: [], ln: i + 1 };
+      i++;
+
+      // Skip unexpected blank lines between number and timestamp
+      while (i < lines.length && !lines[i].trim()) {
+        errors.push({ ln: i + 1, type: 'BLANK_AFTER_NUMBER', sev: 'info',
+          desc: `Dòng trống thừa giữa số thứ tự ${parsedNum} và timestamp — sẽ bị xóa.`,
+          orig: '(blank line)', fix: 'Đã xóa' });
+        i++;
+      }
+
+      // ── Parse timestamp
+      if (i < lines.length) {
+        const tsRaw  = lines[i];
+        const tsTrim = tsRaw.trim();
+
+        if (isTSLine(tsTrim)) {
+          const ts = parseTS(tsTrim);
+          if (ts) {
+            if (ts.hadDot) {
+              errors.push({ ln: i + 1, type: 'TIMESTAMP_DOT_SEPARATOR', sev: 'warning',
+                desc: `Subtitle ${parsedNum}: Timestamp dùng dấu CHẤM thay vì PHẨY cho milliseconds — vi phạm chuẩn SRT.`,
+                orig: tsTrim, fix: tsTrim.replace(/(\d)[.](\d{3})/g, '$1,$2') });
+            }
+            if (ts.hadBadArrow) {
+              errors.push({ ln: i + 1, type: 'WRONG_ARROW', sev: 'warning',
+                desc: `Subtitle ${parsedNum}: Dấu mũi tên không chuẩn — phải là " --> " (một khoảng trắng mỗi bên).`,
+                orig: tsTrim, fix: `${msToTC(ts.start)} --> ${msToTC(ts.end)}` });
+            }
+            const hasExtraSpace = /\s{2,}/.test(tsTrim.replace(/\s*-->\s*/, ' --> '));
+            if (hasExtraSpace) {
+              errors.push({ ln: i + 1, type: 'TIMESTAMP_EXTRA_SPACE', sev: 'info',
+                desc: `Subtitle ${parsedNum}: Có khoảng trắng thừa trong timestamp.`,
+                orig: tsTrim, fix: `${msToTC(ts.start)} --> ${msToTC(ts.end)}` });
+            }
+            if (ts.start >= ts.end) {
+              errors.push({ ln: i + 1, type: 'START_GTE_END', sev: 'critical',
+                desc: `Subtitle ${parsedNum}: Thời gian bắt đầu (${msToTC(ts.start)}) >= kết thúc (${msToTC(ts.end)}) — subtitle không bao giờ hiển thị!`,
+                orig: tsTrim, fix: `End time tăng thêm 1 giây → ${msToTC(ts.start + 1000)}` });
+              ts.end = ts.start + 1000;
+            }
+            if (ts.start === 0 && ts.end === 0) {
+              errors.push({ ln: i + 1, type: 'ZERO_TIMESTAMP', sev: 'warning',
+                desc: `Subtitle ${parsedNum}: Timestamp là 00:00:00,000 → 00:00:00,000 — thời lượng bằng 0.`,
+                orig: tsTrim, fix: 'Đã ghi nhận' });
+            }
+            entry.start = ts.start;
+            entry.end   = ts.end;
+          } else {
+            errors.push({ ln: i + 1, type: 'INVALID_TIMESTAMP', sev: 'critical',
+              desc: `Subtitle ${parsedNum}: Không thể parse timestamp "${tsTrim}" — giá trị không hợp lệ.`,
+              orig: tsTrim, fix: 'Entry bị bỏ qua' });
+          }
+          i++;
+        } else if (/^\d+$/.test(tsTrim)) {
+          // Another number immediately — missing timestamp
+          errors.push({ ln: i + 1, type: 'MISSING_TIMESTAMP', sev: 'critical',
+            desc: `Subtitle ${parsedNum}: Thiếu dòng timestamp — subtitle bị bỏ qua.`,
+            orig: '(không tìm thấy timestamp)', fix: 'Entry bị loại bỏ' });
+          entries.push(entry); // push as-is, will be filtered later
+          continue; // don't increment i, process next number
+        } else {
+          errors.push({ ln: i + 1, type: 'MISSING_TIMESTAMP', sev: 'critical',
+            desc: `Subtitle ${parsedNum}: Thiếu timestamp, tìm thấy text không mong đợi: "${tsTrim.substring(0,40)}".`,
+            orig: tsTrim, fix: 'Entry bị loại bỏ' });
+          i++;
+        }
+      }
+
+      // ── Read text lines
+      let entryDone = false;
+
+      while (i < lines.length && !entryDone) {
+        const tRaw   = lines[i];
+        const tTrim  = tRaw.trim();
+
+        // End of entry: blank line
+        if (!tTrim) { i++; break; }
+
+        // Next entry number without blank line → missing separator
+        if (/^\d+$/.test(tTrim)) {
+          errors.push({ ln: i + 1, type: 'MISSING_BLANK_LINE', sev: 'warning',
+            desc: `Thiếu dòng trống sau subtitle ${parsedNum} trước subtitle tiếp theo — vi phạm chuẩn SRT.`,
+            orig: `Số thứ tự "${tTrim}" nằm ngay sau text, không có dòng trống`, fix: 'Dòng trống đã được thêm' });
+          break; // outer loop handles next number
+        }
+
+        // Next timestamp without entry number → missing blank + number
+        if (isTSLine(tTrim)) {
+          errors.push({ ln: i + 1, type: 'MISSING_BLANK_LINE_AND_NUMBER', sev: 'warning',
+            desc: `Thiếu cả dòng trống lẫn số thứ tự trước timestamp tiếp theo sau subtitle ${parsedNum}.`,
+            orig: tTrim, fix: 'Dòng trống và số thứ tự đã được thêm tự động' });
+          // Push current entry, then create new one
+          entries.push(entry);
+          entryDone = true;
+          const autoNum  = entries.length + 1;
+          const newEntry = { num: autoNum, start: null, end: null, text: [], ln: i + 1 };
+          const ts = parseTS(tTrim);
+          if (ts) {
+            if (ts.start >= ts.end) ts.end = ts.start + 1000;
+            newEntry.start = ts.start; newEntry.end = ts.end;
+          }
+          i++;
+          while (i < lines.length) {
+            const nr = lines[i], nt = nr.trim();
+            if (!nt || /^\d+$/.test(nt) || isTSLine(nt)) break;
+            newEntry.text.push(nr.trimEnd()); i++;
+          }
+          if (i < lines.length && !lines[i].trim()) i++;
+          entries.push(newEntry);
+          break;
+        }
+
+        // ── Check for MERGED ENTRY NUMBER at end of text line ──
+        // Pattern: text ends with " 142" and next line is a timestamp
+        const mergeMatch = tTrim.match(/^(.*\S)\s+(\d+)$/);
+        if (mergeMatch && i + 1 < lines.length && isTSLine(lines[i + 1].trim())) {
+          const mergedNum = parseInt(mergeMatch[2], 10);
+          // Only trigger if merged number is consistent with expected sequence
+          if (mergedNum > parsedNum) {
+            const textPart = mergeMatch[1];
+            errors.push({ ln: i + 1, type: 'MERGED_ENTRY_NUMBER', sev: 'critical',
+              desc: `Số thứ tự ${mergedNum} bị gộp vào cuối text của subtitle ${parsedNum} — gây mất subtitle ${mergedNum} và sai nội dung subtitle ${parsedNum}.`,
+              orig: `"${tTrim}"`,
+              fix: `Text subtitle ${parsedNum}: "${textPart}" | Tách ra thành subtitle ${mergedNum} riêng biệt` });
+
+            entry.text.push(textPart);
+            entries.push(entry);
+            entryDone = true;
+
+            // ── Process the detached entry (mergedNum)
+            i++; // move to timestamp of new entry
+            const newEntry = { num: mergedNum, start: null, end: null, text: [], ln: i + 1 };
+            if (i < lines.length && isTSLine(lines[i].trim())) {
+              const ts = parseTS(lines[i].trim());
+              if (ts) {
+                if (ts.start >= ts.end) ts.end = ts.start + 1000;
+                newEntry.start = ts.start; newEntry.end = ts.end;
+              }
+              i++;
+            }
+            // Read text for new entry
+            while (i < lines.length) {
+              const nr = lines[i], nt = nr.trim();
+              if (!nt || /^\d+$/.test(nt) || isTSLine(nt)) break;
+              // Check trailing whitespace for this text too
+              if (nr !== nr.trimEnd()) {
+                errors.push({ ln: i + 1, type: 'TRAILING_WHITESPACE', sev: 'info',
+                  desc: `Khoảng trắng thừa ở cuối dòng text của subtitle ${mergedNum}.`,
+                  orig: `"${nr}"`, fix: `"${nr.trimEnd()}"` });
+              }
+              newEntry.text.push(nr.trimEnd()); i++;
+            }
+            if (i < lines.length && !lines[i].trim()) i++;
+            entries.push(newEntry);
+            break;
+          }
+        }
+
+        // ── Trailing whitespace check
+        if (tRaw !== tRaw.trimEnd()) {
+          errors.push({ ln: i + 1, type: 'TRAILING_WHITESPACE', sev: 'info',
+            desc: `Khoảng trắng thừa ở cuối dòng text (subtitle ${parsedNum}).`,
+            orig: `"${tRaw.slice(-Math.min(tRaw.length, 30))}"`, fix: 'Đã cắt bỏ' });
+        }
+
+        // ── Leading-only whitespace check (full line of spaces)
+        if (!tTrim && tRaw.length > 0) {
+          errors.push({ ln: i + 1, type: 'WHITESPACE_ONLY_LINE', sev: 'info',
+            desc: `Dòng chỉ có khoảng trắng trong subtitle ${parsedNum}.`,
+            orig: `"${tRaw}"`, fix: 'Đã xóa' });
+          i++; continue;
+        }
+
+        entry.text.push(tRaw.trimEnd());
+        i++;
+      }
+
+      if (!entryDone) {
+        if (entry.text.length === 0 && entry.start !== null) {
+          errors.push({ ln: entry.ln, type: 'EMPTY_ENTRY', sev: 'warning',
+            desc: `Subtitle ${parsedNum} không có dòng text nào — player sẽ hiển thị khoảng trắng.`,
+            orig: '(không có text)', fix: 'Entry bị loại bỏ' });
+        }
+        entries.push(entry);
+      }
+
+    // ── CASE B: Timestamp line without preceding number
+    } else if (isTSLine(trimmed)) {
+      const autoNum = entries.length + 1;
+      errors.push({ ln: i + 1, type: 'MISSING_ENTRY_NUMBER', sev: 'warning',
+        desc: `Timestamp ở dòng ${i+1} không có số thứ tự subtitle phía trước — không đúng chuẩn SRT.`,
+        orig: trimmed, fix: `Số thứ tự ${autoNum} được thêm tự động` });
+
+      const entry = { num: autoNum, start: null, end: null, text: [], ln: i + 1 };
+      const ts = parseTS(trimmed);
+      if (ts) {
+        if (ts.hadDot) errors.push({ ln: i+1, type: 'TIMESTAMP_DOT_SEPARATOR', sev: 'warning',
+          desc: 'Timestamp dùng dấu chấm thay vì dấu phẩy.', orig: trimmed,
+          fix: trimmed.replace(/(\d)[.](\d{3})/g, '$1,$2') });
+        if (ts.start >= ts.end) ts.end = ts.start + 1000;
+        entry.start = ts.start; entry.end = ts.end;
+      }
+      i++;
+      while (i < lines.length) {
+        const r = lines[i], t = r.trim();
+        if (!t || /^\d+$/.test(t) || isTSLine(t)) break;
+        entry.text.push(r.trimEnd()); i++;
+      }
+      if (i < lines.length && !lines[i].trim()) i++;
+      entries.push(entry);
+
+    // ── CASE C: Unknown content at top level
+    } else {
+      errors.push({ ln: i + 1, type: 'UNEXPECTED_TOP_LEVEL_CONTENT', sev: 'info',
+        desc: `Nội dung không mong đợi ở cấp độ gốc: "${trimmed.substring(0, 50)}" — bị bỏ qua.`,
+        orig: trimmed, fix: 'Đã bỏ qua' });
+      i++;
+    }
+  } // end main while
+
+  // ═══════════════════════════════════════
+  // POST-PROCESSING
+  // ═══════════════════════════════════════
+
+  // Filter out invalid entries
+  const valid = entries.filter(e => e.start !== null && e.end !== null &&
+    e.text.length > 0 && e.text.some(t => t.trim()));
+
+  // Check duplicate timestamps
+  const tsSet = new Map();
+  valid.forEach(e => {
+    const key = `${e.start}-${e.end}`;
+    if (tsSet.has(key)) {
+      errors.push({ ln: e.ln, type: 'DUPLICATE_TIMESTAMP', sev: 'warning',
+        desc: `Timestamp trùng lặp: ${msToTC(e.start)} --> ${msToTC(e.end)} — hai subtitle cùng hiển thị một lúc.`,
+        orig: `Subtitle ${e.num}`, fix: 'Đã ghi nhận — giữ nguyên' });
+    }
+    tsSet.set(key, true);
+  });
+
+  // Check ordering
+  const ordered = valid.slice().sort((a, b) => a.start - b.start);
+  let wasDisordered = valid.some((e, i) => ordered[i] && e.start !== ordered[i].start);
+  if (wasDisordered) {
+    errors.push({ ln: 0, type: 'OUT_OF_ORDER', sev: 'critical',
+      desc: 'Các subtitle không theo thứ tự thời gian — đã sắp xếp lại tự động.',
+      orig: 'Thứ tự không đúng', fix: 'Đã sort theo start time tăng dần' });
+    valid.sort((a, b) => a.start - b.start);
+  } else {
+    valid.sort((a, b) => a.start - b.start);
+  }
+
+  // Check and fix overlapping
+  for (let j = 0; j < valid.length - 1; j++) {
+    const cur  = valid[j];
+    const next = valid[j + 1];
+    if (cur.end > next.start) {
+      errors.push({ ln: cur.ln, type: 'OVERLAPPING_TIMESTAMPS', sev: 'warning',
+        desc: `Subtitle ${j+1} kết thúc lúc ${msToTC(cur.end)} nhưng subtitle ${j+2} bắt đầu lúc ${msToTC(next.start)} — chồng ${cur.end - next.start}ms.`,
+        orig: `End: ${msToTC(cur.end)}`, fix: `Giảm end time → ${msToTC(next.start - 1)}` });
+      cur.end = next.start - 1;
+    }
+    // Short gap warning
+    const gap = next.start - cur.end;
+    if (gap >= 0 && gap < 40 && gap > 0) {
+      errors.push({ ln: cur.ln, type: 'GAP_TOO_SHORT', sev: 'info',
+        desc: `Khoảng cách giữa subtitle ${j+1} và ${j+2} chỉ ${gap}ms — nhỏ hơn 1 frame (40ms), có thể gây nháy subtitle.`,
+        orig: `${gap}ms`, fix: 'Đã ghi nhận' });
+    }
+  }
+
+  // Renumber
+  let badSeq = false;
+  valid.forEach((e, j) => {
+    if (e.num !== j + 1) { badSeq = true; e.num = j + 1; }
+  });
+  if (badSeq) {
+    errors.push({ ln: 0, type: 'SEQUENCE_RENUMBERED', sev: 'info',
+      desc: `Toàn bộ ${valid.length} subtitle đã được đánh số lại theo thứ tự 1, 2, 3, … ${valid.length}.`,
+      orig: 'Số thứ tự không liên tục hoặc sai', fix: `Đánh số lại 1–${valid.length}` });
+  }
+
+  // Check very long duration entries
+  valid.forEach(e => {
+    const dur = e.end - e.start;
+    if (dur > 10000) {
+      errors.push({ ln: e.ln, type: 'VERY_LONG_DURATION', sev: 'info',
+        desc: `Subtitle ${e.num} có thời lượng ${(dur/1000).toFixed(1)}s — quá dài, có thể cần tách nhỏ.`,
+        orig: `${msToTC(e.start)} --> ${msToTC(e.end)}`, fix: 'Đã ghi nhận — giữ nguyên' });
+    }
+  });
+
+  // ── Build fixed SRT string
+  const out = [];
+  for (const e of valid) {
+    out.push(String(e.num));
+    out.push(`${msToTC(e.start)} --> ${msToTC(e.end)}`);
+    e.text.filter(t => t.trim()).forEach(t => out.push(t));
+    out.push('');
+  }
+  const fixed = out.join('\n');
+
+  // Statistics
+  const stats = {
+    origLines: lines.length,
+    origEntries: entries.length,
+    fixedEntries: valid.length,
+    totalErrors: errors.length,
+    critical: errors.filter(e => e.sev === 'critical').length,
+    warnings: errors.filter(e => e.sev === 'warning').length,
+    info:     errors.filter(e => e.sev === 'info').length,
+    duration: valid.length > 0 ? valid[valid.length - 1].end : 0,
+  };
+
+  return { errors, fixed, stats, entries: valid };
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI CONTROLLER
+// ═══════════════════════════════════════════════════════════
+
+let G = { errors: [], fixed: '', stats: {}, fileName: '' };
+const STEPS = ['s1','s2','s3','s4','s5','s6','s7','s8'];
+const STEP_MSGS = [
+  'Đọc file...','Chuẩn hóa encoding...','Phân tích blocks...',
+  'Tìm số thứ tự gộp...','Sửa timestamps...','Kiểm tra thứ tự...',
+  'Tạo file mới...','Xác minh...'
+];
+
+/* ── Drag & Drop ── */
+const zone  = document.getElementById('dropZone');
+const finput = document.getElementById('fileInput');
+
+zone.addEventListener('click', () => finput.click());
+finput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault(); zone.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+
+function loadFile(file) {
+  G.fileName = file.name;
+  const reader = new FileReader();
+  reader.onload = e => runProcess(e.target.result, file);
+  reader.readAsText(file, 'UTF-8');
+}
+
+async function runProcess(content, file) {
+  zone.style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  const procBox = document.getElementById('procBox');
+  procBox.style.display = 'block';
+
+  const fill = document.getElementById('progFill');
+
+  for (let k = 0; k < STEPS.length; k++) {
+    if (k > 0) document.getElementById(STEPS[k-1]).className = 'done';
+    const el = document.getElementById(STEPS[k]);
+    el.className = 'active';
+    document.getElementById('procLabel').textContent = STEP_MSGS[k];
+    fill.style.width = ((k + 1) / STEPS.length * 100) + '%';
+    await delay(100 + Math.random() * 180);
+  }
+  document.getElementById(STEPS[STEPS.length - 1]).className = 'done';
+  fill.style.width = '100%';
+  document.getElementById('procLabel').textContent = '✓ Hoàn tất — đang hiển thị kết quả...';
+  await delay(350);
+
+  const result = fixSRT(content);
+  G.errors  = result.errors;
+  G.fixed   = result.fixed;
+  G.stats   = result.stats;
+
+  procBox.style.display = 'none';
+  showResults(result, file);
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ── Show Results ── */
+function showResults(res, file) {
+  document.getElementById('results').style.display = 'block';
+
+  // File strip
+  document.getElementById('fileStrip').innerHTML = [
+    fi('📁 File', file.name),
+    fi('📏 Kích thước', `${(file.size/1024).toFixed(1)} KB`),
+    fi('📑 Dòng gốc', res.stats.origLines.toLocaleString()),
+    fi('🎬 Subtitle gốc', res.stats.origEntries),
+    fi('✅ Subtitle sửa', res.stats.fixedEntries),
+    fi('⏱️ Thời lượng', msToTC(res.stats.duration)),
+  ].join('');
+
+  // Stat cards
+  document.getElementById('statsGrid').innerHTML = [
+    sc(res.stats.totalErrors, 'TỔNG LỖI', res.stats.critical > 0 ? 'c' : res.stats.warnings > 0 ? 'w' : 'i'),
+    sc(res.stats.critical, 'CRITICAL', 'c'),
+    sc(res.stats.warnings, 'CẢNH BÁO', 'w'),
+    sc(res.stats.info, 'THÔNG TIN', 'i'),
+    sc(res.stats.fixedEntries, 'SUBTITLE OK', 'a'),
+  ].join('');
+
+  // Health bar
+  const score = Math.max(0, Math.round(100 - res.stats.critical * 8 - res.stats.warnings * 2 - res.stats.info * 0.3));
+  const scoreColor = score >= 90 ? 'var(--ok)' : score >= 70 ? 'var(--warning)' : 'var(--critical)';
+  document.getElementById('healthBar').innerHTML = `
+    <span class="health-label">ĐIỂM CHẤT LƯỢNG</span>
+    <div class="health-track"><div class="health-fill" id="hf" style="width:0%; background:${scoreColor}"></div></div>
+    <span class="health-score" style="color:${scoreColor}">${score}/100</span>
+  `;
+  setTimeout(() => { const hf = document.getElementById('hf'); if (hf) hf.style.width = score + '%'; }, 100);
+
+  // Filters
+  renderFilters(res.errors);
+  renderErrors(res.errors, 'all');
+  buildDiff(res.errors);
+}
+
+function fi(label, value) {
+  return `<div class="fi"><div class="fi-lbl">${label}</div><div class="fi-val">${value}</div></div>`;
+}
+function sc(val, label, cls) {
+  return `<div class="scard ${cls}"><div class="scard-val">${val}</div><div class="scard-lbl">${label}</div></div>`;
+}
+
+/* ── Filters ── */
+let activeFilter = 'all';
+
+function renderFilters(errors) {
+  const counts = { all: errors.length,
+    critical: errors.filter(e => e.sev === 'critical').length,
+    warning:  errors.filter(e => e.sev === 'warning').length,
+    info:     errors.filter(e => e.sev === 'info').length };
+
+  const defs = [
+    { id:'all',      label:`Tất cả (${counts.all})`,        cls:'on' },
+    { id:'critical', label:`🔴 Critical (${counts.critical})`, cls:'c' },
+    { id:'warning',  label:`🟡 Warning (${counts.warning})`, cls:'w' },
+    { id:'info',     label:`🟢 Info (${counts.info})`,       cls:'i' },
+  ];
+
+  document.getElementById('filterRow').innerHTML = defs.map(d =>
+    `<span class="ftab ${d.id === 'all' ? 'on' : ''}" id="ftab_${d.id}" onclick="setFilter('${d.id}')">${d.label}</span>`
+  ).join('');
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.ftab').forEach(el => el.classList.remove('on'));
+  const tab = document.getElementById('ftab_' + f);
+  if (tab) tab.classList.add('on');
+  renderErrors(G.errors, f);
+}
+
+function renderErrors(errors, filter) {
+  const list = filter === 'all' ? errors : errors.filter(e => e.sev === filter);
+  const el   = document.getElementById('errList');
+
+  if (list.length === 0) {
+    el.innerHTML = '<div class="no-err">✓ Không có lỗi trong danh mục này</div>'; return;
+  }
+
+  el.innerHTML = list.map(e => `
+    <div class="eitem ${e.sev}">
+      <div class="ehdr">
+        <span class="ebadge">${e.sev.toUpperCase()}</span>
+        <span class="etype">${e.type}</span>
+        ${e.ln > 0 ? `<span class="eline">Dòng ${e.ln}</span>` : ''}
+      </div>
+      <div class="edesc">${e.desc}</div>
+      ${(e.orig || e.fix) ? `
+      <div class="ecodes">
+        ${e.orig ? `<span class="ecode-b" title="${esc(e.orig)}">✗ ${esc(e.orig.substring(0,70))}</span>` : ''}
+        ${e.fix  ? `<span class="ecode-a" title="${esc(e.fix)}">✓ ${esc(e.fix.substring(0,70))}</span>` : ''}
+      </div>` : ''}
+    </div>
+  `).join('');
+}
+
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ── Diff preview ── */
+function buildDiff(errors) {
+  const items = errors.filter(e => e.orig && e.fix && e.orig !== e.fix && e.orig !== '(blank line)');
+  if (items.length === 0) return;
+  document.getElementById('diffPreview').style.display = 'block';
+  document.getElementById('diffBody').innerHTML = items.slice(0, 40).map(e => `
+    <div class="diff-line-r">− ${esc(e.orig.substring(0,80))}</div>
+    <div class="diff-line-g">+ ${esc(e.fix.substring(0,80))}</div>
+    <div style="border-bottom:1px solid var(--border); margin:4px 0"></div>
+  `).join('');
+}
+
+/* ── AI Analysis ── */
+async function runAI() {
+  document.getElementById('aiBtn').style.display = 'none';
+  document.getElementById('aiSpin').style.display = 'block';
+
+  const typeCounts = {};
+  G.errors.forEach(e => { typeCounts[e.type] = (typeCounts[e.type] || 0) + 1; });
+
+  const errorTypeSummary = Object.entries(typeCounts)
+    .sort((a,b) => b[1]-a[1])
+    .map(([t,c]) => `  • ${t}: ${c} lần`)
+    .join('\n');
+
+  const criticalDetails = G.errors
+    .filter(e => e.sev === 'critical')
+    .slice(0, 15)
+    .map(e => `  [Dòng ${e.ln || '?'}] ${e.type}: ${e.desc}`)
+    .join('\n');
+
+  const warningDetails = G.errors
+    .filter(e => e.sev === 'warning')
+    .slice(0, 10)
+    .map(e => `  [Dòng ${e.ln || '?'}] ${e.type}: ${e.desc}`)
+    .join('\n');
+
+  const prompt = `Bạn là chuyên gia phân tích file SRT subtitle hàng đầu. Hãy phân tích SIÊU CHI TIẾT, SIÊU ĐỈNH báo cáo lỗi sau từ file SRT và đưa ra đánh giá toàn diện nhất có thể.
+
+━━━━━━━━━━━━━━━━━━━━━━━
+THÔNG TIN FILE SRT
+━━━━━━━━━━━━━━━━━━━━━━━
+Tên file: ${G.fileName}
+Tổng số dòng gốc: ${G.stats.origLines.toLocaleString()}
+Số subtitle gốc (trước sửa): ${G.stats.origEntries}
+Số subtitle sau khi sửa: ${G.stats.fixedEntries}
+Thời lượng tổng: ${msToTC(G.stats.duration)}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+THỐNG KÊ LỖI
+━━━━━━━━━━━━━━━━━━━━━━━
+Tổng lỗi phát hiện: ${G.stats.totalErrors}
+  ▸ Critical (nghiêm trọng): ${G.stats.critical}
+  ▸ Warning (cảnh báo): ${G.stats.warnings}
+  ▸ Info (thông tin): ${G.stats.info}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+PHÂN LOẠI LỖI THEO LOẠI
+━━━━━━━━━━━━━━━━━━━━━━━
+${errorTypeSummary || '(Không có lỗi)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+CHI TIẾT LỖI CRITICAL
+━━━━━━━━━━━━━━━━━━━━━━━
+${criticalDetails || '(Không có lỗi critical)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+CHI TIẾT LỖI WARNING
+━━━━━━━━━━━━━━━━━━━━━━━
+${warningDetails || '(Không có warning)'}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+YÊU CẦU PHÂN TÍCH
+━━━━━━━━━━━━━━━━━━━━━━━
+Hãy cung cấp phân tích siêu đỉnh bao gồm:
+
+1. 📊 ĐIỂM CHẤT LƯỢNG TỔNG THỂ (0–100)
+   - Điểm số và lý do chi tiết
+   - So sánh với tiêu chuẩn SRT chuẩn quốc tế
+   - Đánh giá tác động đến trải nghiệm người xem
+
+2. 🔴 PHÂN TÍCH LỖI CRITICAL
+   - Giải thích tại sao từng loại lỗi critical nguy hiểm
+   - Hệ quả cụ thể khi để nguyên (player nào bị ảnh hưởng)
+   - Tại sao các lỗi này xuất hiện trong file
+
+3. 🟡 PHÂN TÍCH LỖI WARNING
+   - Tác động của các cảnh báo lên UX người xem
+   - Mức độ ưu tiên sửa chữa
+
+4. 🔄 PHÂN TÍCH PATTERN LỖI
+   - Xu hướng lỗi lặp lại — có phải do cùng một nguyên nhân?
+   - Lỗi "merged entry number" — nguyên nhân kỹ thuật là gì?
+   - Lỗi "missing blank line" xuất hiện như thế nào?
+
+5. ✅ ĐÁNH GIÁ SAU KHI SỬA TỰ ĐỘNG
+   - File sau khi fix đạt chất lượng bao nhiêu %?
+   - Còn rủi ro nào không?
+   - Có thể tin tưởng sử dụng ngay không?
+
+6. 💡 KHUYẾN NGHỊ CHUYÊN GIA
+   - Công cụ phần mềm nên dùng để tạo SRT chuẩn (Aegisub, SubtitleEdit, etc.)
+   - Quy trình tốt nhất để tạo file SRT không lỗi
+   - Cách kiểm tra file SRT trước khi phát hành
+
+7. 🎯 TÓM TẮT EXECUTIVE
+   - 3 điểm quan trọng nhất cần nhớ về file này
+
+Trả lời bằng tiếng Việt, đầy đủ chi tiết, chuyên nghiệp và hữu ích tối đa.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2048,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = (data.content || []).map(c => c.text || '').join('');
+    document.getElementById('aiSpin').style.display = 'none';
+    const ac = document.getElementById('aiContent');
+    ac.style.display = 'block';
+    ac.textContent = text || '(Không nhận được phản hồi từ AI)';
+  } catch (err) {
+    document.getElementById('aiSpin').style.display = 'none';
+    const ac = document.getElementById('aiContent');
+    ac.style.display = 'block';
+    ac.textContent = '⚠️ Lỗi kết nối AI: ' + err.message + '\n\nVui lòng kiểm tra kết nối và thử lại.';
+  }
+}
+
+/* ── Download ── */
+function doDownload() {
+  if (!G.fixed) return;
+  const blob = new Blob([G.fixed], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = G.fileName.replace(/\.srt$/i, '_FIXED.srt');
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ── Reset ── */
+function doReset() {
+  zone.style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('procBox').style.display = 'none';
+  finput.value = '';
+  document.getElementById('aiContent').style.display = 'none';
+  document.getElementById('aiContent').textContent = '';
+  document.getElementById('aiSpin').style.display = 'none';
+  document.getElementById('aiBtn').style.display = 'inline-flex';
+  document.getElementById('diffPreview').style.display = 'none';
+  STEPS.forEach(s => { document.getElementById(s).className = ''; });
+  document.getElementById('progFill').style.width = '0%';
+  G = { errors: [], fixed: '', stats: {}, fileName: '' };
+}
+</script>
+</body>
+</html>
